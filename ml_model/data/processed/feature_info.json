@@ -1,0 +1,78 @@
+{
+  "all_features": [
+    "age",
+    "sex_encoded",
+    "comorbid_diabetes",
+    "comorbid_hypertension",
+    "smoker",
+    "temperature_c",
+    "oxygen_saturation",
+    "heart_rate",
+    "respiratory_rate",
+    "bp_systolic",
+    "bp_diastolic",
+    "fever",
+    "cough",
+    "sore_throat",
+    "fatigue",
+    "headache",
+    "nausea",
+    "vomiting",
+    "diarrhea",
+    "shortness_of_breath",
+    "chest_pain",
+    "runny_nose",
+    "body_ache",
+    "loss_of_smell",
+    "age_group_encoded",
+    "high_fever",
+    "low_oxygen",
+    "tachycardia",
+    "hypertension_acute",
+    "symptom_count",
+    "respiratory_symptom_count",
+    "gi_symptom_count"
+  ],
+  "demographic_features": [
+    "age",
+    "sex_encoded"
+  ],
+  "medical_history_features": [
+    "comorbid_diabetes",
+    "comorbid_hypertension",
+    "smoker"
+  ],
+  "vital_signs_features": [
+    "temperature_c",
+    "oxygen_saturation",
+    "heart_rate",
+    "respiratory_rate",
+    "bp_systolic",
+    "bp_diastolic"
+  ],
+  "symptom_features": [
+    "fever",
+    "cough",
+    "sore_throat",
+    "fatigue",
+    "headache",
+    "nausea",
+    "vomiting",
+    "diarrhea",
+    "shortness_of_breath",
+    "chest_pain",
+    "runny_nose",
+    "body_ache",
+    "loss_of_smell"
+  ],
+  "engineered_features": [
+    "age_group_encoded",
+    "high_fever",
+    "low_oxygen",
+    "tachycardia",
+    "hypertension_acute",
+    "symptom_count",
+    "respiratory_symptom_count",
+    "gi_symptom_count"
+  ]
+}

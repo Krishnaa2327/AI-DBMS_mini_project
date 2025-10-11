@@ -1,0 +1,10 @@
+{
+  "Allergic Rhinitis": 0,
+  "COVID-19": 1,
+  "Common Cold": 2,
+  "Food Poisoning": 3,
+  "Gastroenteritis": 4,
+  "Migraine": 5,
+  "Pneumonia": 6,
+  "Urinary Tract Infection": 7
+}
