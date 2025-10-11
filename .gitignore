@@ -1,0 +1,10 @@
+__pycache__/
+.env
+*.pyc
+*.pyo
+instance/
+ml_model/saved_models/*.joblib
+database/*.db
+*.log
+.DS_Store
+.vscode/

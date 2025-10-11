@@ -1,0 +1,14 @@
+Flask
+Flask_SQLAlchemy
+Flask_Login
+Flask_WTF
+mysql-connector-python
+pandas
+scikit-learn
+joblib
+numpy
+matplotlib
+seaborn
+streamlit
+pytest
+pytest-flask
