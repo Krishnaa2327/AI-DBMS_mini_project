@@ -1,10 +1,24 @@
 -- =====================================================
--- Smart Hospital Management System - Enhanced Schema
+-- Smart Hospital Management System - Database Setup
 -- Created by: Krishna + Omkar
 -- Date: October 12, 2025
 -- Phase: 2 - Database Integration
 -- =====================================================
 
+-- Step 1: Create database (if not exists)
+CREATE DATABASE IF NOT EXISTS smart_hospital;
+USE smart_hospital;
+
+-- Step 2: Drop existing tables (for clean setup)
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS medical_records;
+DROP TABLE IF EXISTS appointments;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS patients;
+DROP TABLE IF EXISTS doctors;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Step 3: Create all tables (execute schema.sql content)
 -- 1. PATIENTS TABLE - Enhanced with address field
 CREATE TABLE patients (
     patient_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +76,7 @@ CREATE TABLE medical_records (
     FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE SET NULL
 );
 
--- 5. USERS TABLE - Authentication system (optional)
+-- 5. USERS TABLE - Authentication system
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
@@ -74,10 +88,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- =====================================================
--- INDEXES for Performance Optimization
--- =====================================================
-
+-- Step 4: Create indexes for performance
 -- Patient indexes
 CREATE INDEX idx_patient_name ON patients(name);
 CREATE INDEX idx_patient_contact ON patients(contact);
@@ -100,3 +111,16 @@ CREATE INDEX idx_medical_predicted_disease ON medical_records(predicted_disease)
 -- User indexes
 CREATE INDEX idx_user_role ON users(role);
 CREATE INDEX idx_user_active ON users(is_active);
+
+-- Step 5: Verify table creation
+SHOW TABLES;
+
+-- Step 6: Display table structures
+DESCRIBE patients;
+DESCRIBE doctors;
+DESCRIBE appointments;
+DESCRIBE medical_records;
+DESCRIBE users;
+
+-- Success message
+SELECT 'Database setup completed successfully!' as Status;
