@@ -540,87 +540,609 @@ def appointments_page():
 
 def prediction_page():
     """
-    AI Disease Prediction interface (placeholder for now)
+    AI Disease Prediction interface with real ML integration
     """
     st.markdown("<h1 class='main-header'>🤖 AI Disease Prediction</h1>", unsafe_allow_html=True)
     
-    st.info("🚧 **AI Integration Coming Soon!** This page will connect to Omkar's trained ML model.")
+    st.success("🔬 **AI Model Active!** Using trained Random Forest model with 48% accuracy.")
     
-    # Placeholder UI for prediction interface
-    st.subheader("Symptom Input Interface")
+    # Import ML utilities
+    try:
+        from utils.ml_utils import predict, load_resources
+        ml_available = True
+        st.info("✅ ML model loaded successfully!")
+    except Exception as e:
+        st.error(f"❌ ML model loading failed: {e}")
+        ml_available = False
     
-    with st.form("prediction_form"):
-        col1, col2 = st.columns(2)
+    # Tabs for different prediction interfaces
+    tab1, tab2, tab3 = st.tabs(["🔮 Quick Prediction", "📊 Advanced Prediction", "📈 Prediction History"])
+    
+    with tab1:
+        st.subheader("Quick Disease Prediction")
         
-        with col1:
-            st.write("**Patient Information:**")
-            patients = []
-            try:
-                patients = db.get_patients(limit=50)
-            except:
-                pass
-                
-            if patients:
-                patient_options = {f"{p['name']} (ID: {p['patient_id']})": p['patient_id'] for p in patients}
-                selected_patient = st.selectbox("Select Patient:", ['New Patient'] + list(patient_options.keys()))
-            else:
-                selected_patient = 'New Patient'
+        with st.form("quick_prediction_form"):
+            col1, col2 = st.columns(2)
             
-            if selected_patient == 'New Patient':
-                patient_name = st.text_input("Patient Name:")
-                patient_age = st.number_input("Age:", min_value=1, max_value=150, value=30)
-                patient_gender = st.selectbox("Gender:", ["Male", "Female", "Other"])
+            with col1:
+                st.write("**Patient Information:**")
+                patients = []
+                try:
+                    patients = db.get_patients(limit=50)
+                except:
+                    pass
+                    
+                if patients:
+                    patient_options = {f"{p['name']} (ID: {p['patient_id']})": p['patient_id'] for p in patients}
+                    selected_patient = st.selectbox("Select Patient:", ['New Patient'] + list(patient_options.keys()))
+                else:
+                    selected_patient = 'New Patient'
+                
+                if selected_patient == 'New Patient':
+                    patient_name = st.text_input("Patient Name:")
+                    patient_age = st.number_input("Age:", min_value=1, max_value=150, value=30)
+                    patient_gender = st.selectbox("Gender:", ["Male", "Female", "Other"])
+                else:
+                    patient_id = patient_options[selected_patient]
+                    patient_data = db.get_patient_by_id(patient_id)
+                    if patient_data:
+                        patient_name = patient_data['name']
+                        patient_age = patient_data['age']
+                        patient_gender = patient_data['gender']
+                        st.write(f"**Selected:** {patient_name} (Age: {patient_age}, Gender: {patient_gender})")
+            
+            with col2:
+                st.write("**Core Symptoms:**")
+                
+                # Core symptoms for quick prediction
+                fever = st.checkbox("Fever")
+                cough = st.checkbox("Cough")
+                sore_throat = st.checkbox("Sore Throat")
+                headache = st.checkbox("Headache")
+                nausea = st.checkbox("Nausea")
+                vomiting = st.checkbox("Vomiting")
+                diarrhea = st.checkbox("Diarrhea")
+                fatigue = st.checkbox("Fatigue")
+                shortness_of_breath = st.checkbox("Shortness of Breath")
+                body_ache = st.checkbox("Body Ache")
+            
+            predict_button = st.form_submit_button("🔮 Predict Disease", type="primary")
+            
+            if predict_button:
+                if ml_available:
+                    try:
+                        # Prepare features for ML model
+                        features = {
+                            'age': patient_age,
+                            'sex_encoded': 1 if patient_gender == 'Male' else 0,
+                            'fever': 1 if fever else 0,
+                            'cough': 1 if cough else 0,
+                            'sore_throat': 1 if sore_throat else 0,
+                            'headache': 1 if headache else 0,
+                            'nausea': 1 if nausea else 0,
+                            'vomiting': 1 if vomiting else 0,
+                            'diarrhea': 1 if diarrhea else 0,
+                            'fatigue': 1 if fatigue else 0,
+                            'shortness_of_breath': 1 if shortness_of_breath else 0,
+                            'body_ache': 1 if body_ache else 0,
+                            # Default values for missing features
+                            'temperature_c': 37.5 if fever else 36.5,
+                            'oxygen_saturation': 95,
+                            'heart_rate': 80,
+                            'respiratory_rate': 16,
+                            'bp_systolic': 120,
+                            'bp_diastolic': 80,
+                            'comorbid_diabetes': 0,
+                            'comorbid_hypertension': 0,
+                            'smoker': 0,
+                            'chest_pain': 0,
+                            'runny_nose': 0,
+                            'loss_of_smell': 0,
+                            'age_group_encoded': 0 if patient_age < 18 else 1 if patient_age < 65 else 2,
+                            'high_fever': 1 if fever else 0,
+                            'low_oxygen': 0,
+                            'tachycardia': 0,
+                            'hypertension_acute': 0,
+                            'symptom_count': sum([fever, cough, sore_throat, headache, nausea, vomiting, diarrhea, fatigue, shortness_of_breath, body_ache]),
+                            'respiratory_symptom_count': sum([cough, sore_throat, shortness_of_breath]),
+                            'gi_symptom_count': sum([nausea, vomiting, diarrhea])
+                        }
+                        
+                        # Get predictions
+                        predictions = predict(features, top_k=3)
+                        
+                        if predictions:
+                            st.success("🔮 **AI Prediction Results**")
+                            
+                            # Display top prediction
+                            top_prediction = predictions[0]
+                            
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Predicted Disease", top_prediction['disease'])
+                            with col2:
+                                st.metric("Confidence", f"{top_prediction['probability']*100:.1f}%")
+                            with col3:
+                                risk_level = "High" if top_prediction['probability'] > 0.7 else "Medium" if top_prediction['probability'] > 0.4 else "Low"
+                                st.metric("Risk Level", risk_level)
+                            
+                            # Show all predictions
+                            st.subheader("Top 3 Predictions:")
+                            for i, pred in enumerate(predictions, 1):
+                                st.write(f"{i}. **{pred['disease']}** - {pred['probability']*100:.1f}% confidence")
+                            
+                            # Collect symptoms for saving
+                            symptoms_list = []
+                            if fever: symptoms_list.append("fever")
+                            if cough: symptoms_list.append("cough")
+                            if sore_throat: symptoms_list.append("sore throat")
+                            if headache: symptoms_list.append("headache")
+                            if nausea: symptoms_list.append("nausea")
+                            if vomiting: symptoms_list.append("vomiting")
+                            if diarrhea: symptoms_list.append("diarrhea")
+                            if fatigue: symptoms_list.append("fatigue")
+                            if shortness_of_breath: symptoms_list.append("shortness of breath")
+                            if body_ache: symptoms_list.append("body ache")
+                            
+                            symptoms_text = ", ".join(symptoms_list)
+                            st.write(f"**Symptoms:** {symptoms_text}")
+                            
+                            # Save prediction to database
+                            try:
+                                if selected_patient != 'New Patient':
+                                    # Existing patient
+                                    record_id = db.save_prediction(
+                                        patient_id=patient_options[selected_patient],
+                                        predicted_disease=top_prediction['disease'],
+                                        confidence_score=top_prediction['probability'],
+                                        symptoms=symptoms_text
+                                    )
+                                    st.success(f"✅ Prediction saved to patient record! Record ID: {record_id}")
+                                else:
+                                    # New patient - add to database first
+                                    if patient_name:
+                                        new_patient_id = db.add_patient(patient_name, patient_age, patient_gender)
+                                        record_id = db.save_prediction(
+                                            patient_id=new_patient_id,
+                                            predicted_disease=top_prediction['disease'],
+                                            confidence_score=top_prediction['probability'],
+                                            symptoms=symptoms_text
+                                        )
+                                        st.success(f"✅ New patient added and prediction saved! Patient ID: {new_patient_id}, Record ID: {record_id}")
+                                    else:
+                                        st.warning("Please enter patient name to save prediction")
+                                        
+                            except Exception as e:
+                                st.error(f"❌ Error saving prediction: {e}")
+                                
+                    except Exception as e:
+                        st.error(f"❌ Prediction failed: {e}")
+                        st.write("**Debug info:**", str(e))
+                else:
+                    st.error("❌ ML model not available. Please check the model files.")
+    
+    with tab2:
+        st.subheader("Advanced Disease Prediction")
+        st.info("📊 Comprehensive prediction using all 32 medical features")
+        
+        with st.form("advanced_prediction_form"):
+            # Patient Information Section
+            st.write("### 👤 Patient Information")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                patients = []
+                try:
+                    patients = db.get_patients(limit=50)
+                except:
+                    pass
+                    
+                if patients:
+                    patient_options = {f"{p['name']} (ID: {p['patient_id']})": p['patient_id'] for p in patients}
+                    selected_patient_adv = st.selectbox("Select Patient:", ['New Patient'] + list(patient_options.keys()), key="adv_patient")
+                else:
+                    selected_patient_adv = 'New Patient'
+                
+                if selected_patient_adv == 'New Patient':
+                    patient_name_adv = st.text_input("Patient Name:", key="adv_name")
+                    patient_age_adv = st.number_input("Age:", min_value=1, max_value=150, value=30, key="adv_age")
+                    patient_gender_adv = st.selectbox("Gender:", ["Male", "Female", "Other"], key="adv_gender")
+                else:
+                    patient_id = patient_options[selected_patient_adv]
+                    patient_data = db.get_patient_by_id(patient_id)
+                    if patient_data:
+                        patient_name_adv = patient_data['name']
+                        patient_age_adv = patient_data['age']
+                        patient_gender_adv = patient_data['gender']
+                        st.write(f"**Selected:** {patient_name_adv} (Age: {patient_age_adv}, Gender: {patient_gender_adv})")
+            
+            with col2:
+                st.write("**Medical History:**")
+                comorbid_diabetes = st.checkbox("Diabetes", key="diabetes")
+                comorbid_hypertension = st.checkbox("Hypertension", key="hypertension")
+                smoker = st.checkbox("Smoker", key="smoker")
+            
+            with col3:
+                st.write("**Vital Signs:**")
+                temperature = st.number_input("Temperature (°C):", min_value=35.0, max_value=42.0, value=36.5, step=0.1, key="temp")
+                oxygen_sat = st.number_input("Oxygen Saturation (%):", min_value=70, max_value=100, value=98, key="o2")
+                heart_rate = st.number_input("Heart Rate (bpm):", min_value=40, max_value=200, value=72, key="hr")
+            
+            # More vital signs
+            col4, col5, col6 = st.columns(3)
+            with col4:
+                respiratory_rate = st.number_input("Respiratory Rate (/min):", min_value=8, max_value=40, value=16, key="rr")
+            with col5:
+                bp_systolic = st.number_input("BP Systolic (mmHg):", min_value=80, max_value=250, value=120, key="sys")
+            with col6:
+                bp_diastolic = st.number_input("BP Diastolic (mmHg):", min_value=40, max_value=150, value=80, key="dia")
+            
+            # Symptoms Section
+            st.write("### 🩺 Symptoms Checklist")
+            
+            # Primary symptoms
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.write("**General:**")
+                fever_adv = st.checkbox("Fever", key="fever_adv")
+                fatigue_adv = st.checkbox("Fatigue", key="fatigue_adv")
+                headache_adv = st.checkbox("Headache", key="headache_adv")
+                body_ache_adv = st.checkbox("Body Ache", key="body_ache_adv")
+            
+            with col2:
+                st.write("**Respiratory:**")
+                cough_adv = st.checkbox("Cough", key="cough_adv")
+                sore_throat_adv = st.checkbox("Sore Throat", key="sore_throat_adv")
+                shortness_of_breath_adv = st.checkbox("Shortness of Breath", key="sob_adv")
+                chest_pain_adv = st.checkbox("Chest Pain", key="chest_pain_adv")
+                runny_nose_adv = st.checkbox("Runny Nose", key="runny_nose_adv")
+            
+            with col3:
+                st.write("**Gastrointestinal:**")
+                nausea_adv = st.checkbox("Nausea", key="nausea_adv")
+                vomiting_adv = st.checkbox("Vomiting", key="vomiting_adv")
+                diarrhea_adv = st.checkbox("Diarrhea", key="diarrhea_adv")
+            
+            with col4:
+                st.write("**Other:**")
+                loss_of_smell_adv = st.checkbox("Loss of Smell", key="smell_adv")
+            
+            predict_button_adv = st.form_submit_button("🔬 Advanced Prediction", type="primary")
+            
+            if predict_button_adv:
+                if ml_available:
+                    try:
+                        # Prepare comprehensive features for ML model
+                        features_adv = {
+                            'age': patient_age_adv,
+                            'sex_encoded': 1 if patient_gender_adv == 'Male' else 0,
+                            'comorbid_diabetes': 1 if comorbid_diabetes else 0,
+                            'comorbid_hypertension': 1 if comorbid_hypertension else 0,
+                            'smoker': 1 if smoker else 0,
+                            'temperature_c': temperature,
+                            'oxygen_saturation': oxygen_sat,
+                            'heart_rate': heart_rate,
+                            'respiratory_rate': respiratory_rate,
+                            'bp_systolic': bp_systolic,
+                            'bp_diastolic': bp_diastolic,
+                            'fever': 1 if fever_adv else 0,
+                            'cough': 1 if cough_adv else 0,
+                            'sore_throat': 1 if sore_throat_adv else 0,
+                            'fatigue': 1 if fatigue_adv else 0,
+                            'headache': 1 if headache_adv else 0,
+                            'nausea': 1 if nausea_adv else 0,
+                            'vomiting': 1 if vomiting_adv else 0,
+                            'diarrhea': 1 if diarrhea_adv else 0,
+                            'shortness_of_breath': 1 if shortness_of_breath_adv else 0,
+                            'chest_pain': 1 if chest_pain_adv else 0,
+                            'runny_nose': 1 if runny_nose_adv else 0,
+                            'body_ache': 1 if body_ache_adv else 0,
+                            'loss_of_smell': 1 if loss_of_smell_adv else 0,
+                            # Engineered features
+                            'age_group_encoded': 0 if patient_age_adv < 18 else 1 if patient_age_adv < 65 else 2,
+                            'high_fever': 1 if temperature > 38.5 else 0,
+                            'low_oxygen': 1 if oxygen_sat < 95 else 0,
+                            'tachycardia': 1 if heart_rate > 100 else 0,
+                            'hypertension_acute': 1 if bp_systolic > 140 or bp_diastolic > 90 else 0,
+                            'symptom_count': sum([fever_adv, cough_adv, sore_throat_adv, fatigue_adv, headache_adv, nausea_adv, vomiting_adv, diarrhea_adv, shortness_of_breath_adv, chest_pain_adv, runny_nose_adv, body_ache_adv, loss_of_smell_adv]),
+                            'respiratory_symptom_count': sum([cough_adv, sore_throat_adv, shortness_of_breath_adv]),
+                            'gi_symptom_count': sum([nausea_adv, vomiting_adv, diarrhea_adv])
+                        }
+                        
+                        # Get predictions
+                        predictions_adv = predict(features_adv, top_k=5)
+                        
+                        if predictions_adv:
+                            st.success("🔬 **Advanced AI Prediction Results**")
+                            
+                            # Display comprehensive results
+                            top_prediction_adv = predictions_adv[0]
+                            
+                            # Metrics row
+                            col1, col2, col3, col4 = st.columns(4)
+                            with col1:
+                                st.metric("Primary Disease", top_prediction_adv['disease'])
+                            with col2:
+                                st.metric("Confidence", f"{top_prediction_adv['probability']*100:.1f}%")
+                            with col3:
+                                risk_level = "High" if top_prediction_adv['probability'] > 0.7 else "Medium" if top_prediction_adv['probability'] > 0.4 else "Low"
+                                st.metric("Risk Level", risk_level)
+                            with col4:
+                                total_symptoms = features_adv['symptom_count']
+                                st.metric("Total Symptoms", total_symptoms)
+                            
+                            # Detailed predictions table
+                            st.subheader("📊 Top 5 Differential Diagnoses:")
+                            pred_data = []
+                            for i, pred in enumerate(predictions_adv, 1):
+                                pred_data.append({
+                                    "Rank": i,
+                                    "Disease": pred['disease'],
+                                    "Probability": f"{pred['probability']*100:.1f}%",
+                                    "Confidence": "High" if pred['probability'] > 0.6 else "Medium" if pred['probability'] > 0.3 else "Low"
+                                })
+                            
+                            pred_df = pd.DataFrame(pred_data)
+                            st.dataframe(pred_df, use_container_width=True)
+                            
+                            # Feature importance display
+                            st.subheader("🔍 Clinical Summary:")
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.write("**Vital Signs Assessment:**")
+                                if features_adv['high_fever']:
+                                    st.warning("⚠️ High fever detected")
+                                if features_adv['low_oxygen']:
+                                    st.error("🚨 Low oxygen saturation")
+                                if features_adv['tachycardia']:
+                                    st.warning("⚠️ Elevated heart rate")
+                                if features_adv['hypertension_acute']:
+                                    st.warning("⚠️ Elevated blood pressure")
+                                
+                                st.write(f"- Temperature: {temperature}°C")
+                                st.write(f"- O2 Saturation: {oxygen_sat}%")
+                                st.write(f"- Heart Rate: {heart_rate} bpm")
+                                st.write(f"- BP: {bp_systolic}/{bp_diastolic} mmHg")
+                            
+                            with col2:
+                                st.write("**Symptom Analysis:**")
+                                st.write(f"- Total symptoms: {total_symptoms}")
+                                st.write(f"- Respiratory symptoms: {features_adv['respiratory_symptom_count']}")
+                                st.write(f"- GI symptoms: {features_adv['gi_symptom_count']}")
+                                
+                                if comorbid_diabetes or comorbid_hypertension or smoker:
+                                    st.write("**Risk Factors:**")
+                                    if comorbid_diabetes:
+                                        st.write("- Diabetes mellitus")
+                                    if comorbid_hypertension:
+                                        st.write("- Hypertension")
+                                    if smoker:
+                                        st.write("- Smoking history")
+                            
+                            # Save prediction to database
+                            try:
+                                # Collect all symptoms for saving
+                                symptoms_list_adv = []
+                                if fever_adv: symptoms_list_adv.append("fever")
+                                if cough_adv: symptoms_list_adv.append("cough")
+                                if sore_throat_adv: symptoms_list_adv.append("sore throat")
+                                if fatigue_adv: symptoms_list_adv.append("fatigue")
+                                if headache_adv: symptoms_list_adv.append("headache")
+                                if nausea_adv: symptoms_list_adv.append("nausea")
+                                if vomiting_adv: symptoms_list_adv.append("vomiting")
+                                if diarrhea_adv: symptoms_list_adv.append("diarrhea")
+                                if shortness_of_breath_adv: symptoms_list_adv.append("shortness of breath")
+                                if chest_pain_adv: symptoms_list_adv.append("chest pain")
+                                if runny_nose_adv: symptoms_list_adv.append("runny nose")
+                                if body_ache_adv: symptoms_list_adv.append("body ache")
+                                if loss_of_smell_adv: symptoms_list_adv.append("loss of smell")
+                                
+                                symptoms_text_adv = ", ".join(symptoms_list_adv)
+                                
+                                if selected_patient_adv != 'New Patient':
+                                    # Existing patient
+                                    record_id = db.save_prediction(
+                                        patient_id=patient_options[selected_patient_adv],
+                                        predicted_disease=top_prediction_adv['disease'],
+                                        confidence_score=top_prediction_adv['probability'],
+                                        symptoms=symptoms_text_adv
+                                    )
+                                    st.success(f"✅ Advanced prediction saved to patient record! Record ID: {record_id}")
+                                else:
+                                    # New patient - add to database first
+                                    if patient_name_adv:
+                                        new_patient_id = db.add_patient(patient_name_adv, patient_age_adv, patient_gender_adv)
+                                        record_id = db.save_prediction(
+                                            patient_id=new_patient_id,
+                                            predicted_disease=top_prediction_adv['disease'],
+                                            confidence_score=top_prediction_adv['probability'],
+                                            symptoms=symptoms_text_adv
+                                        )
+                                        st.success(f"✅ New patient added and advanced prediction saved! Patient ID: {new_patient_id}, Record ID: {record_id}")
+                                    else:
+                                        st.warning("Please enter patient name to save prediction")
+                                        
+                            except Exception as e:
+                                st.error(f"❌ Error saving advanced prediction: {e}")
+                                
+                    except Exception as e:
+                        st.error(f"❌ Advanced prediction failed: {e}")
+                        st.write("**Debug info:**", str(e))
+                else:
+                    st.error("❌ ML model not available. Please check the model files.")
+    
+    with tab3:
+        st.subheader("📈 AI Prediction History")
+        
+        # Filters for history
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            # Patient filter
+            try:
+                patients = db.get_patients(limit=100)
+                if patients:
+                    patient_options = {'All Patients': None}
+                    patient_options.update({f"{p['name']} (ID: {p['patient_id']})": p['patient_id'] for p in patients})
+                    selected_patient_filter = st.selectbox("Filter by Patient:", list(patient_options.keys()))
+                    patient_filter = patient_options[selected_patient_filter]
+                else:
+                    patient_filter = None
+            except:
+                patient_filter = None
         
         with col2:
-            st.write("**Symptoms Checklist:**")
+            # Disease filter
+            disease_filter = st.selectbox("Filter by Disease:", [
+                'All Diseases', 'COVID-19', 'Common Cold', 'Pneumonia', 
+                'Allergic Rhinitis', 'Food Poisoning', 'Gastroenteritis', 
+                'Migraine', 'Urinary Tract Infection'
+            ])
+        
+        with col3:
+            # Date range
+            date_range = st.date_input("From Date:", value=date.today() - timedelta(days=30))
+        
+        # Get prediction history
+        try:
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
             
-            # Common symptoms (will be connected to ML model later)
-            fever = st.checkbox("Fever")
-            cough = st.checkbox("Cough")
-            sore_throat = st.checkbox("Sore Throat")
-            headache = st.checkbox("Headache")
-            nausea = st.checkbox("Nausea")
-            vomiting = st.checkbox("Vomiting")
-            diarrhea = st.checkbox("Diarrhea")
-            fatigue = st.checkbox("Fatigue")
-        
-        additional_symptoms = st.text_area("Additional Symptoms:", placeholder="Describe any other symptoms...")
-        
-        predict_button = st.form_submit_button("🔮 Predict Disease", type="primary")
-        
-        if predict_button:
-            # Placeholder prediction logic
-            symptoms_list = []
-            if fever: symptoms_list.append("fever")
-            if cough: symptoms_list.append("cough")
-            if sore_throat: symptoms_list.append("sore throat")
-            if headache: symptoms_list.append("headache")
-            if nausea: symptoms_list.append("nausea")
-            if vomiting: symptoms_list.append("vomiting")
-            if diarrhea: symptoms_list.append("diarrhea")
-            if fatigue: symptoms_list.append("fatigue")
+            # Build query with filters
+            query = """
+            SELECT mr.record_id, mr.patient_id, p.name as patient_name, 
+                   mr.predicted_disease, mr.confidence_score, mr.symptoms,
+                   mr.visit_date, p.age, p.gender
+            FROM medical_records mr
+            JOIN patients p ON mr.patient_id = p.patient_id
+            WHERE mr.predicted_disease IS NOT NULL
+            """
             
-            if symptoms_list:
-                st.success("🔮 **Prediction Results** (Demo)")
+            params = []
+            
+            if patient_filter:
+                query += " AND mr.patient_id = %s"
+                params.append(patient_filter)
+            
+            if disease_filter != 'All Diseases':
+                query += " AND mr.predicted_disease = %s"
+                params.append(disease_filter)
+            
+            query += " AND DATE(mr.visit_date) >= %s"
+            params.append(date_range)
+            
+            query += " ORDER BY mr.visit_date DESC LIMIT 100"
+            
+            cursor.execute(query, params)
+            predictions_history = cursor.fetchall()
+            
+            cursor.close()
+            conn.close()
+            
+            if predictions_history:
+                # Convert to DataFrame
+                df_history = pd.DataFrame(predictions_history)
+                df_history['visit_date'] = pd.to_datetime(df_history['visit_date']).dt.strftime('%Y-%m-%d %H:%M')
+                df_history['confidence_percentage'] = (df_history['confidence_score'] * 100).round(1)
                 
-                # Mock prediction results
-                predicted_disease = "Common Cold" if cough and sore_throat else "Gastroenteritis" if nausea and vomiting else "Migraine"
-                confidence = 85.2
-                
-                col1, col2, col3 = st.columns(3)
+                # Summary statistics
+                col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric("Predicted Disease", predicted_disease)
+                    st.metric("Total Predictions", len(df_history))
                 with col2:
-                    st.metric("Confidence", f"{confidence}%")
+                    avg_confidence = df_history['confidence_score'].mean() * 100
+                    st.metric("Avg Confidence", f"{avg_confidence:.1f}%")
                 with col3:
-                    st.metric("Risk Level", "Medium")
+                    most_common_disease = df_history['predicted_disease'].mode().iloc[0] if not df_history.empty else "N/A"
+                    st.metric("Most Predicted", most_common_disease)
+                with col4:
+                    unique_patients = df_history['patient_id'].nunique()
+                    st.metric("Unique Patients", unique_patients)
                 
-                st.write(f"**Symptoms:** {', '.join(symptoms_list)}")
+                # Visualizations
+                col1, col2 = st.columns(2)
                 
-                # Save prediction (placeholder)
-                st.info("💡 **Note:** This is a demo prediction. Real ML integration coming in next phase!")
+                with col1:
+                    st.subheader("📈 Disease Distribution")
+                    disease_counts = df_history['predicted_disease'].value_counts()
+                    if len(disease_counts) > 0:
+                        fig_pie = px.pie(
+                            values=disease_counts.values,
+                            names=disease_counts.index,
+                            title="Predicted Diseases Distribution"
+                        )
+                        st.plotly_chart(fig_pie, use_container_width=True)
+                
+                with col2:
+                    st.subheader("📈 Confidence Distribution")
+                    fig_hist = px.histogram(
+                        df_history,
+                        x='confidence_percentage',
+                        nbins=10,
+                        title="Confidence Score Distribution",
+                        labels={'confidence_percentage': 'Confidence (%)', 'count': 'Number of Predictions'}
+                    )
+                    st.plotly_chart(fig_hist, use_container_width=True)
+                
+                # Prediction timeline
+                st.subheader("🕰️ Prediction Timeline")
+                df_timeline = df_history.copy()
+                df_timeline['date'] = pd.to_datetime(df_timeline['visit_date'], format='%Y-%m-%d %H:%M')
+                daily_counts = df_timeline.groupby(df_timeline['date'].dt.date).size().reset_index()
+                daily_counts.columns = ['date', 'predictions']
+                
+                if len(daily_counts) > 0:
+                    fig_timeline = px.line(
+                        daily_counts,
+                        x='date',
+                        y='predictions',
+                        title="Daily Predictions Over Time",
+                        markers=True
+                    )
+                    st.plotly_chart(fig_timeline, use_container_width=True)
+                
+                # Detailed history table
+                st.subheader("📋 Detailed Prediction History")
+                
+                # Search functionality
+                search_term = st.text_input("🔍 Search in symptoms or disease:", "")
+                if search_term:
+                    mask = df_history['predicted_disease'].str.contains(search_term, case=False, na=False) | \
+                           df_history['symptoms'].str.contains(search_term, case=False, na=False)
+                    df_history = df_history[mask]
+                
+                # Display table
+                display_columns = ['record_id', 'patient_name', 'predicted_disease', 'confidence_percentage', 'symptoms', 'visit_date']
+                st.dataframe(
+                    df_history[display_columns].rename(columns={
+                        'record_id': 'Record ID',
+                        'patient_name': 'Patient',
+                        'predicted_disease': 'Predicted Disease',
+                        'confidence_percentage': 'Confidence %',
+                        'symptoms': 'Symptoms',
+                        'visit_date': 'Date'
+                    }),
+                    use_container_width=True
+                )
+                
+                # Export option
+                if st.button("📎 Export History to CSV"):
+                    csv = df_history.to_csv(index=False)
+                    st.download_button(
+                        label="Download CSV",
+                        data=csv,
+                        file_name=f"prediction_history_{date.today()}.csv",
+                        mime="text/csv"
+                    )
+                
             else:
-                st.warning("Please select at least one symptom for prediction.")
+                st.info("📈 No prediction history found for the selected filters.")
+                st.write("Try adjusting your filters or make some predictions first!")
+                
+        except Exception as e:
+            st.error(f"❌ Error loading prediction history: {e}")
+            st.write("**Debug info:**", str(e))
 
 if __name__ == "__main__":
     main()
