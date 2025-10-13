@@ -36,35 +36,282 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
 <style>
+    /* Main Header Styling */
     .main-header {
-        font-size: 2.5rem;
-        color: #2E86AB;
+        font-size: 2.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
         margin-bottom: 2rem;
+        padding: 1rem 0;
+        animation: fadeInDown 0.6s ease-in;
     }
-    .metric-card {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
+    
+    /* Page Title Animation */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    .success-message {
-        padding: 1rem;
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 5px;
-        color: #155724;
+    
+    /* Enhanced Metric Cards */
+    .stMetric {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .sidebar .sidebar-content {
+    
+    .stMetric:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .stMetric label {
+        color: white !important;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    
+    .stMetric .metric-value {
+        color: white !important;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    [data-testid="stSidebar"] .css-1d391kg {
+        background: transparent;
+    }
+    
+    /* Enhanced Buttons - Override Streamlit defaults */
+    .stButton > button,
+    .stButton > button:focus,
+    .stButton > button:active,
+    .stButton > button:hover,
+    button[kind="primary"],
+    button[kind="secondary"],
+    div[data-testid="stForm"] button,
+    [class*="stButton"] button {
+        background-color: #667eea !important;
+        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 600 !important;
+        width: 100%;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+    }
+    
+    .stButton > button p,
+    button[kind="primary"] p,
+    button[kind="secondary"] p {
+        color: #ffffff !important;
+    }
+    
+    .stButton > button:hover,
+    button[kind="primary"]:hover,
+    button[kind="secondary"]:hover {
+        background-color: #5568d3 !important;
+        background-image: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+        color: #ffffff !important;
+    }
+    
+    /* Form Styling */
+    .stTextInput>div>div>input,
+    .stNumberInput>div>div>input,
+    .stSelectbox>div>div>select,
+    .stTextArea>div>div>textarea {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 0.6rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .stTextInput>div>div>input:focus,
+    .stNumberInput>div>div>input:focus,
+    .stSelectbox>div>div>select:focus,
+    .stTextArea>div>div>textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* DataFrames */
+    .stDataFrame {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Info/Success/Warning/Error Messages */
+    .stAlert {
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        border-left: 4px solid;
+        animation: slideInLeft 0.4s ease;
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Pulse Glow Animation for Success Messages */
+    .success-pulse {
+        animation: pulseGlow 1.5s ease-in-out;
+    }
+    
+    @keyframes pulseGlow {
+        0% {
+            opacity: 0;
+            transform: scale(0.95);
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+    
+    /* Tab Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 10px 10px 0 0 !important;
+        padding: 0.8rem 1.5rem !important;
+        font-weight: 600 !important;
+        background-color: #f0f2f6 !important;
+        color: #333333 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background-color: #667eea !important;
+        color: #ffffff !important;
+    }
+    
+    .stTabs [aria-selected="true"] button,
+    .stTabs [aria-selected="true"] div {
+        color: #ffffff !important;
+    }
+    
+    /* Chat Messages */
+    .stChatMessage {
+        border-radius: 15px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Chat Input */
+    .stChatInput>div>div>input {
+        border-radius: 25px;
+        padding: 0.8rem 1.5rem;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    
+    .stChatInput>div>div>input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    }
+    
+    /* Card-like containers */
+    .element-container {
+        transition: all 0.3s ease;
+    }
+    
+    /* Plotly charts */
+    .js-plotly-plot {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Improve readability */
+    body {
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    
+    /* Subheader styling */
+    .stMarkdown h2 {
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+    }
+    
+    .stMarkdown h3 {
+        color: #764ba2;
+        margin-top: 1.5rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'Dashboard'
+    st.session_state.current_page = 'dashboard'
 
 def main():
     """
@@ -72,25 +319,50 @@ def main():
     """
     # Sidebar navigation
     with st.sidebar:
-        st.markdown("<h1 style='text-align: center; color: white;'>🏥 Smart Hospital</h1>", unsafe_allow_html=True)
-        st.markdown("<hr>", unsafe_allow_html=True)
+        # Hospital Logo and Title with better styling
+        st.markdown("""
+        <div style='text-align: center; padding: 1.5rem 0;'>
+            <h1 style='color: white; font-size: 2rem; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);'>
+                🏥 Smart Hospital
+            </h1>
+            <p style='color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 0.5rem;'>
+                Intelligent Healthcare Management
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Navigation buttons
+        st.markdown("<hr style='margin: 1rem 0; border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
+        
+        st.markdown("<p style='color: rgba(255,255,255,0.9); font-weight: 600; margin-bottom: 0.8rem; padding-left: 0.5rem;'>📍 NAVIGATION</p>", unsafe_allow_html=True)
+        
+        # Navigation buttons with improved styling
         pages = {
             "🏠 Dashboard": "dashboard",
             "👥 Patients": "patients",
             "👩‍⚕️ Doctors": "doctors",
             "📅 Appointments": "appointments",
-            "🤖 AI Prediction": "prediction"
+            "🤖 AI Prediction": "prediction",
+            "💬 AI Chatbot": "chatbot"
         }
         
         for page_name, page_key in pages.items():
-            if st.button(page_name, key=page_key, use_container_width=True):
+            # Highlight current page
+            is_current = st.session_state.current_page == page_key
+            button_type = "primary" if is_current else "secondary"
+            
+            if st.button(page_name, key=page_key, use_container_width=True, type=button_type if is_current else "secondary"):
                 st.session_state.current_page = page_key
+                st.rerun()
         
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown("**Made by:** Krishna + Omkar")
-        st.markdown("**Phase:** 2 - UI Development")
+        st.markdown("<hr style='margin: 2rem 0; border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
+        
+        # Footer with better styling
+        st.markdown("""
+        <div style='text-align: center; color: rgba(255,255,255,0.8); font-size: 0.85rem;'>
+            <p style='margin: 0.3rem 0;'><strong>👨‍💻 Developed by:</strong></p>
+            <p style='margin: 0.3rem 0;'>Krishna + Omkar</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Main content area
     if st.session_state.current_page == 'dashboard':
@@ -103,6 +375,8 @@ def main():
         appointments_page()
     elif st.session_state.current_page == 'prediction':
         prediction_page()
+    elif st.session_state.current_page == 'chatbot':
+        chatbot_page()
 
 # =====================================================
 # DASHBOARD PAGE
@@ -114,32 +388,51 @@ def dashboard_page():
     """
     st.markdown("<h1 class='main-header'>🏥 Hospital Dashboard</h1>", unsafe_allow_html=True)
     
+    # Welcome message with current date
+    from datetime import datetime
+    current_date = datetime.now().strftime("%B %d, %Y")
+    st.markdown(f"""
+    <div style='background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 2rem;
+                text-align: center;'>
+        <p style='margin: 0; color: #667eea; font-size: 1.1rem; font-weight: 600;'>
+            Welcome to Smart Hospital Management System
+        </p>
+        <p style='margin: 0.3rem 0 0 0; color: #666; font-size: 0.9rem;'>
+            {current_date}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     try:
         # Get dashboard statistics
         stats = db.get_dashboard_stats()
         
-        # Key metrics row
+        # Key metrics row with enhanced styling
+        st.markdown("### 📊 Key Metrics")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             st.metric(
                 label="👥 Total Patients",
                 value=stats['total_patients'],
-                delta=f"+{stats['total_patients'] - 5} this month"
+                delta=f"+{stats['total_patients'] - 5} this month" if stats['total_patients'] > 5 else "New system"
             )
         
         with col2:
             st.metric(
                 label="👩‍⚕️ Total Doctors",
                 value=stats['total_doctors'],
-                delta=None
+                delta=f"{stats['total_doctors']} active"
             )
         
         with col3:
             st.metric(
                 label="📅 Scheduled",
                 value=stats['scheduled_appointments'],
-                delta=f"+{stats['scheduled_appointments']} upcoming"
+                delta=f"{stats['scheduled_appointments']} upcoming"
             )
         
         with col4:
@@ -149,13 +442,14 @@ def dashboard_page():
                 delta=f"{stats['todays_visits']} today"
             )
         
-        st.markdown("---")
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Charts row
+        # Charts row with section header
+        st.markdown("### 📊 Analytics & Insights")
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("📈 Upcoming Appointments")
+            st.markdown("#### 📅 Upcoming Appointments")
             if stats['upcoming_appointments']:
                 upcoming_df = pd.DataFrame(stats['upcoming_appointments'])
                 upcoming_df['appointment_date'] = pd.to_datetime(upcoming_df['appointment_date'])
@@ -169,7 +463,7 @@ def dashboard_page():
                 st.info("No upcoming appointments scheduled")
         
         with col2:
-            st.subheader("🔍 Top Predicted Diseases")
+            st.markdown("#### 🔍 Top Predicted Diseases")
             if stats['top_predicted_diseases']:
                 diseases_df = pd.DataFrame(stats['top_predicted_diseases'])
                 
@@ -185,7 +479,8 @@ def dashboard_page():
                 st.info("No disease predictions yet")
         
         # Recent activity
-        st.subheader("📋 Recent Activity")
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("### 📋 Recent Activity")
         
         # Get recent patients
         recent_patients = db.get_patients(limit=5)
@@ -265,8 +560,13 @@ def patients_page():
                 if name:
                     try:
                         patient_id = db.add_patient(name, age, gender, contact, address)
-                        st.success(f"✅ Patient '{name}' added successfully! Patient ID: {patient_id}")
-                        st.balloons()
+                        st.markdown("""
+                        <div class='success-pulse' style='background: #d4edda; border-left: 4px solid #28a745; 
+                             padding: 1rem; border-radius: 10px; color: #155724;'>
+                            <strong>✅ Patient '{name}' added successfully!</strong><br>
+                            Patient ID: {patient_id}
+                        </div>
+                        """.format(name=name, patient_id=patient_id), unsafe_allow_html=True)
                     except Exception as e:
                         st.error(f"Error adding patient: {e}")
                 else:
@@ -392,8 +692,13 @@ def doctors_page():
                 if name and specialization:
                     try:
                         doctor_id = db.add_doctor(name, specialization, contact, email)
-                        st.success(f"✅ Doctor '{name}' added successfully! Doctor ID: {doctor_id}")
-                        st.balloons()
+                        st.markdown("""
+                        <div class='success-pulse' style='background: #d4edda; border-left: 4px solid #28a745; 
+                             padding: 1rem; border-radius: 10px; color: #155724;'>
+                            <strong>✅ Doctor '{name}' added successfully!</strong><br>
+                            Doctor ID: {doctor_id}
+                        </div>
+                        """.format(name=name, doctor_id=doctor_id), unsafe_allow_html=True)
                     except Exception as e:
                         st.error(f"Error adding doctor: {e}")
                 else:
@@ -490,8 +795,13 @@ def appointments_page():
                                     patient_id, doctor_id, appointment_datetime, notes
                                 )
                                 
-                                st.success(f"✅ Appointment scheduled successfully! Appointment ID: {appointment_id}")
-                                st.balloons()
+                                st.markdown("""
+                                <div class='success-pulse' style='background: #d4edda; border-left: 4px solid #28a745; 
+                                     padding: 1rem; border-radius: 10px; color: #155724;'>
+                                    <strong>✅ Appointment scheduled successfully!</strong><br>
+                                    Appointment ID: {appointment_id}
+                                </div>
+                                """.format(appointment_id=appointment_id), unsafe_allow_html=True)
                                 
                             except Exception as e:
                                 st.error(f"Error scheduling appointment: {e}")
@@ -507,7 +817,12 @@ def appointments_page():
         st.subheader("Update Appointment Status")
         
         try:
-            appointments = db.get_appointments(status='Scheduled')
+            # Get all appointments, then filter for Scheduled ones
+            all_appointments = db.get_appointments()
+            if all_appointments:
+                appointments = [a for a in all_appointments if a.get('status') == 'Scheduled']
+            else:
+                appointments = []
             
             if appointments:
                 appointment_options = {f"#{a['appointment_id']} - {a['patient_name']} with Dr. {a['doctor_name']} ({a['appointment_date']})": a['appointment_id'] for a in appointments}
@@ -543,8 +858,6 @@ def prediction_page():
     AI Disease Prediction interface with real ML integration
     """
     st.markdown("<h1 class='main-header'>🤖 AI Disease Prediction</h1>", unsafe_allow_html=True)
-    
-    st.success("🔬 **AI Model Active!** Using trained Random Forest model with 48% accuracy.")
     
     # Import ML utilities
     try:
@@ -1143,6 +1456,213 @@ def prediction_page():
         except Exception as e:
             st.error(f"❌ Error loading prediction history: {e}")
             st.write("**Debug info:**", str(e))
+
+# =====================================================
+# CHATBOT PAGE
+# =====================================================
+
+def chatbot_page():
+    """
+    AI Chatbot interface for conversational disease prediction
+    """
+    st.markdown("<h1 class='main-header'>💬 AI Medical Chatbot</h1>", unsafe_allow_html=True)
+    
+    # Import chatbot module
+    try:
+        from chatbot import get_chatbot, reset_chatbot
+        chatbot_available = True
+    except Exception as e:
+        st.error(f"❌ Chatbot module loading failed: {e}")
+        chatbot_available = False
+        return
+    
+    # Initialize session state for chat history
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+        st.session_state.chatbot_started = False
+    
+    # Enhanced info banner with gradient
+    st.markdown("""
+    <div style='background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                border-left: 4px solid #667eea;
+                padding: 1.2rem;
+                border-radius: 10px;
+                margin-bottom: 1.5rem;'>
+        <p style='margin: 0; color: #333; font-size: 1rem;'>
+            <strong>💡 How it works:</strong> This AI chatbot will ask you questions about your symptoms 
+            and medical history to provide an intelligent disease prediction. Just chat naturally!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Control buttons with better layout
+    col1, col2, col3, col4 = st.columns([1.5, 1.5, 1.5, 3.5])
+    with col1:
+        if st.button("🆕 New Chat", type="primary", use_container_width=True):
+            reset_chatbot()
+            st.session_state.chat_history = []
+            st.session_state.chatbot_started = False
+            st.rerun()
+    
+    with col2:
+        show_help = st.button("ℹ️ Help", use_container_width=True)
+    
+    with col3:
+        if len(st.session_state.chat_history) > 0:
+            if st.button("📋 Export Chat", use_container_width=True):
+                # Export chat history
+                chat_text = "\n\n".join([
+                    f"{'User' if msg['role'] == 'user' else 'Bot'}: {msg['message']}" 
+                    for msg in st.session_state.chat_history
+                ])
+                st.download_button(
+                    label="📥 Download",
+                    data=chat_text,
+                    file_name="chat_history.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+    
+    if show_help:
+        st.markdown("""
+        <div style='background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;'>
+            <h4 style='color: #667eea; margin-top: 0;'>💬 Chat Commands</h4>
+            <ul style='margin: 0.5rem 0;'>
+                <li>Type <code>restart</code> to start over</li>
+                <li>Type <code>quit</code> to end conversation</li>
+                <li>Answer questions naturally</li>
+            </ul>
+            <h4 style='color: #667eea; margin-top: 1rem;'>📝 Example Responses</h4>
+            <ul style='margin: 0.5rem 0;'>
+                <li><code>'John, 35, Male'</code> - for patient info</li>
+                <li><code>'I have a headache and fever'</code> - for symptoms</li>
+                <li><code>'Yes'</code> or <code>'No'</code> - for yes/no questions</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Chat container
+    st.markdown("---")
+    
+    # Display chat history
+    chat_container = st.container()
+    
+    with chat_container:
+        if not st.session_state.chatbot_started:
+            # Show initial greeting
+            chatbot = get_chatbot()
+            greeting = chatbot.start_conversation()
+            st.session_state.chat_history.append({
+                'role': 'assistant',
+                'message': greeting
+            })
+            st.session_state.chatbot_started = True
+        
+        # Display all messages
+        for i, chat in enumerate(st.session_state.chat_history):
+            if chat['role'] == 'user':
+                with st.chat_message("user", avatar="👤"):
+                    st.markdown(chat['message'])
+            else:
+                with st.chat_message("assistant", avatar="🤖"):
+                    st.markdown(chat['message'])
+    
+    # Chat input
+    user_input = st.chat_input("Type your message here...")
+    
+    if user_input:
+        # Add user message to history
+        st.session_state.chat_history.append({
+            'role': 'user',
+            'message': user_input
+        })
+        
+        # Get chatbot response
+        chatbot = get_chatbot()
+        response = chatbot.process_message(user_input)
+        
+        # Check if chatbot generated a prediction
+        if chatbot.conversation_state == "completed":
+            # Save prediction to database if possible
+            try:
+                collected_data = chatbot.get_collected_data()
+                patient_info = collected_data['patient_info']
+                symptoms = collected_data['symptoms']
+                
+                # Get the prediction from the response
+                # Extract the top disease from response
+                if "**AI Prediction Results**" in response:
+                    # Try to parse the top prediction
+                    lines = response.split('\n')
+                    for line in lines:
+                        if line.strip().startswith('1.'):
+                            # Extract disease name and confidence
+                            import re
+                            match = re.search(r'\*\*(.+?)\*\* - ([\d.]+)%', line)
+                            if match:
+                                predicted_disease = match.group(1)
+                                confidence = float(match.group(2)) / 100
+                                
+                                # Build symptoms text
+                                symptom_list = [k.replace('_', ' ') for k, v in symptoms.items() 
+                                              if v == 1 and k in chatbot.all_symptoms]
+                                symptoms_text = ", ".join(symptom_list)
+                                
+                                # Try to find existing patient or create new one
+                                patient_name = patient_info.get('name', 'Patient')
+                                patient_age = patient_info.get('age', 30)
+                                patient_gender = patient_info.get('gender', 'Other')
+                                
+                                # Search for existing patient by name
+                                patients = db.get_patients()
+                                existing_patient = None
+                                for p in patients:
+                                    if p['name'].lower() == patient_name.lower():
+                                        existing_patient = p
+                                        break
+                                
+                                if existing_patient:
+                                    patient_id = existing_patient['patient_id']
+                                else:
+                                    # Create new patient
+                                    patient_id = db.add_patient(patient_name, patient_age, patient_gender)
+                                
+                                # Save prediction
+                                record_id = db.save_prediction(
+                                    patient_id=patient_id,
+                                    predicted_disease=predicted_disease,
+                                    confidence_score=confidence,
+                                    symptoms=symptoms_text
+                                )
+                                
+                                response += f"\n\n✅ **Prediction saved to medical records!** (Record ID: {record_id})"
+                                break
+            except Exception as e:
+                st.warning(f"Note: Could not save prediction to database: {e}")
+        
+        # Add assistant response to history
+        st.session_state.chat_history.append({
+            'role': 'assistant',
+            'message': response
+        })
+        
+        # Rerun to update display
+        st.rerun()
+    
+    # Sidebar with chat statistics
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown("### 📊 Chat Stats")
+        st.metric("Messages", len(st.session_state.chat_history))
+        
+        if st.session_state.chat_history:
+            chatbot = get_chatbot()
+            if chatbot.conversation_state != "greeting":
+                collected_data = chatbot.get_collected_data()
+                symptoms = collected_data.get('symptoms', {})
+                symptom_count = sum(1 for v in symptoms.values() if v == 1)
+                st.metric("Symptoms Collected", symptom_count)
+                st.metric("Conversation State", chatbot.conversation_state.replace('_', ' ').title())
 
 if __name__ == "__main__":
     main()
