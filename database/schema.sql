@@ -1,5 +1,5 @@
 -- =====================================================
--- Smart Hospital Management System - Enhanced Schema
+-- Smart Hospital Management System -  Schema
 -- Created by: Krishna + Omkar
 -- Date: October 12, 2025
 -- Phase: 2 - Database Integration
@@ -74,9 +74,8 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- =====================================================
+
 -- INDEXES for Performance Optimization
--- =====================================================
 
 -- Patient indexes
 CREATE INDEX idx_patient_name ON patients(name);
