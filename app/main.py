@@ -23,7 +23,21 @@ import os
 
 # Add database module to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from database.connection import db
+
+# Try MySQL first, fallback to SQLite for deployment
+try:
+    from database.connection import db
+    database_type = "MySQL"
+    print("✅ Connected to MySQL database")
+except Exception as mysql_error:
+    try:
+        from database.sqlite_connection import db
+        database_type = "SQLite"
+        print("ℹ️ Using SQLite database (MySQL not available)")
+    except Exception as sqlite_error:
+        print(f"❌ Database connection failed: {sqlite_error}")
+        import sys
+        sys.exit(1)
 
 # Page configuration
 st.set_page_config(
@@ -355,6 +369,19 @@ def main():
                 st.rerun()
         
         st.markdown("<hr style='margin: 2rem 0; border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
+        
+        # Database status indicator
+        database_icon = "🗄️" if database_type == "MySQL" else "📁"
+        database_color = "#4CAF50" if database_type == "MySQL" else "#FF9800"
+        st.markdown(f"""
+        <div style='text-align: center; margin-bottom: 1rem;'>
+            <div style='background: {database_color}; padding: 0.5rem; border-radius: 10px; margin-bottom: 0.5rem;'>
+                <p style='margin: 0; color: white; font-size: 0.8rem; font-weight: 600;'>
+                    {database_icon} {database_type} Database
+                </p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Footer with better styling
         st.markdown("""
@@ -1663,6 +1690,8 @@ def chatbot_page():
                 symptom_count = sum(1 for v in symptoms.values() if v == 1)
                 st.metric("Symptoms Collected", symptom_count)
                 st.metric("Conversation State", chatbot.conversation_state.replace('_', ' ').title())
+
+
 
 if __name__ == "__main__":
     main()
