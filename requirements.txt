@@ -12,3 +12,4 @@ seaborn
 streamlit
 pytest
 pytest-flask
+plotly
